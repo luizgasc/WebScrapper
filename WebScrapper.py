@@ -2,11 +2,15 @@ from urllib.request import urlopen, Request
 from bs4 import BeautifulSoup
 from urllib.error import URLError, HTTPError
 import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
 
-url = 'https://www.nfl.com/stats/team-stats/'
+
+url = 'https://www.nfl.com/stats/team-stats'
 headers = {}
 l = []
 header = []
+
 
 
 def decode_html(input):
@@ -23,19 +27,35 @@ try:
     table = soup.find('table')
     table_rows = table.find_all('tr')
     table_headers = soup.findAll('th')
+
+
     for th in table_headers:
         tcolumn = th.text
         header.append(tcolumn)
 
     for tr in table_rows:
         td = tr.findAll('td')
+
         row = [tr.text for tr in td]
         l.append(row)
-    df = pd.DataFrame(l)
+    
+    df = pd.DataFrame(l,columns=header)
+    df = df.drop([0,1])
+    df = df.set_index('Team')
 
-
-    df.columns = header
     print(df)
+
+    
+ 
+
+    df["TD"]=df["TD"].astype(float)
+    df.plot.bar(y="TD",rot=0)
+    plt.show()
+    
+
+
+
+
 
 except HTTPError as e:
     print(e.status, e.reason)
